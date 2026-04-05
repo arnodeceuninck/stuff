@@ -61,8 +61,10 @@ class Location(Base):
     items: Mapped[List["Item"]] = relationship(
         back_populates="location", foreign_keys="Item.location_id"
     )
-    linked_items: Mapped[List["Item"]] = relationship(
-        back_populates="linked_location", foreign_keys="Item.linked_location_id"
+    linked_item: Mapped[Optional["Item"]] = relationship(
+        back_populates="linked_location",
+        foreign_keys="Item.linked_location_id",
+        uselist=False,
     )
 
 
@@ -83,7 +85,7 @@ class Item(Base):
         nullable=False,
     )
     linked_location_id: Mapped[Optional[str]] = mapped_column(
-        String(36), ForeignKey("locations.id"), nullable=True
+        String(36), ForeignKey("locations.id"), nullable=True, unique=True
     )
 
     purchased_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
@@ -98,7 +100,7 @@ class Item(Base):
         back_populates="items", foreign_keys=[location_id]
     )
     linked_location: Mapped[Optional[Location]] = relationship(
-        back_populates="linked_items", foreign_keys=[linked_location_id]
+        back_populates="linked_item", foreign_keys=[linked_location_id]
     )
     merchant: Mapped[Optional[Merchant]] = relationship(back_populates="items")
 
