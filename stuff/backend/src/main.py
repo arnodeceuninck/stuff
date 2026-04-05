@@ -8,6 +8,7 @@ from backend_framework.auth import create_auth_proxy_router
 from backend_framework.dependencies import init_db
 
 from src.auth_hooks import ensure_local_user_exists
+from src.handlers.items import router as items_router
 from src.handlers.users import router as users_router
 
 
@@ -20,3 +21,4 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = create_app(title="Stuff API", lifespan_hooks=lifespan)
 app.include_router(create_auth_proxy_router(on_auth_success=ensure_local_user_exists))
 app.include_router(users_router)
+app.include_router(items_router)
