@@ -4,7 +4,8 @@ from config import FrameworkSettings
 
 
 class AuthSettings(FrameworkSettings):
-    access_token_expire_minutes: int = 60
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
 
 
 @lru_cache
