@@ -1,8 +1,12 @@
+from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel
+from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Numeric, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from db.mixins import Base
 
 
 class PriceKind(str, Enum):
@@ -19,61 +23,147 @@ class PriceFrequency(str, Enum):
     YEARLY = "YEARLY"
 
 
-class Price(BaseModel):
-    amount: Decimal
-    currency: str = "EUR"
-    kind: PriceKind = PriceKind.PURCHASE
-    frequency: Optional[PriceFrequency] = None
+class OwnershipType(str, Enum):
+    OWNED = "OWNED"
+    RENTED_OR_BORROWED = "RENBOW"
+    WANTED = "WANTED"
+    NEEDED = "NEEDED"
 
-class Merchant(BaseModel):
-    id: str # uuid
-    name: str
-    website: Optional[str] = None
-    note: Optional[str] = None
 
-class User(BaseModel):
-    id: str # uuid
-    email: Optional[str] = None
+class Merchant(Base):
+    __tablename__ = "merchants"
 
-class Attachment(BaseModel):
-    id: str # uuid
-    filename: str
-    url: str
-    upload_date: Optional[str] = None
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    website: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-class Comment(BaseModel):
-    id: str # uuid
-    item_id: str
-    user_id: Optional[str] = None
-    content: str
-    created_at: Optional[str] = None
+    items: Mapped[List["Item"]] = relationship(back_populates="merchant")
 
-class Item(BaseModel):
-    id: str # uuid
 
-    # Item info
-    name: str
-    attachments: List[Attachment] = []
-    primary_image: Optional[Attachment] = None # uuid of the attachment that is the primary image
-    description: Optional[str] = None
-    comments: List[Comment] = []
-    
-    user_id: Optional[str] = None
+class User(Base):
+    __tablename__ = "users"
 
-    location_id: Optional[str] = None
-    
-    ownership_type: Optional[str] = "OWNED" # OWNED, RENTED, BORROWED, WANTED, NEEDED
-    
-    linked_location_id: Optional[str] = None # If the item itself is a location (e.g. a wardrobe)
-    
-    # Purchase details
-    price: Optional[Price] = None
-    purchased_date: Optional[str] = None
-    merchant_id: Optional[str] = None
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-class Location(BaseModel):
-    id: str # uuid
-    name: str
-    parent_location_id: Optional[str] = None
-    note: Optional[str] = None
-    items: List[Item] = []
+    locations: Mapped[List["Location"]] = relationship(back_populates="user")
+    items: Mapped[List["Item"]] = relationship(back_populates="user")
+    comments: Mapped[List["Comment"]] = relationship(back_populates="user")
+
+
+class Location(Base):
+    __tablename__ = "locations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), nullable=False)
+    parent_location_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("locations.id"), nullable=True
+    )
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    user: Mapped[User] = relationship(back_populates="locations")
+    parent_location: Mapped[Optional["Location"]] = relationship(
+        "Location", remote_side=[id], back_populates="child_locations"
+    )
+    child_locations: Mapped[List["Location"]] = relationship(
+        "Location", back_populates="parent_location"
+    )
+    items: Mapped[List["Item"]] = relationship(
+        back_populates="location", foreign_keys="Item.location_id"
+    )
+    linked_items: Mapped[List["Item"]] = relationship(
+        back_populates="linked_location", foreign_keys="Item.linked_location_id"
+    )
+
+
+class Item(Base):
+    __tablename__ = "items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
+    location_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("locations.id"), nullable=True
+    )
+    ownership_type: Mapped[OwnershipType] = mapped_column(
+        SQLEnum(OwnershipType, name="ownership_type_enum"),
+        default=OwnershipType.OWNED,
+        nullable=False,
+    )
+    linked_location_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("locations.id"), nullable=True
+    )
+
+    purchased_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    merchant_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("merchants.id"), nullable=True
+    )
+    primary_image_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("attachments.id"), nullable=True
+    )
+
+    user: Mapped[Optional[User]] = relationship(back_populates="items")
+    location: Mapped[Optional[Location]] = relationship(
+        back_populates="items", foreign_keys=[location_id]
+    )
+    linked_location: Mapped[Optional[Location]] = relationship(
+        back_populates="linked_items", foreign_keys=[linked_location_id]
+    )
+    merchant: Mapped[Optional[Merchant]] = relationship(back_populates="items")
+
+    attachments: Mapped[List["Attachment"]] = relationship(
+        back_populates="item", foreign_keys="Attachment.item_id"
+    )
+    comments: Mapped[List["Comment"]] = relationship(back_populates="item")
+    price: Mapped[Optional["Price"]] = relationship(back_populates="item", uselist=False)
+    primary_image: Mapped[Optional["Attachment"]] = relationship(
+        foreign_keys=[primary_image_id], post_update=True
+    )
+
+
+class Attachment(Base):
+    __tablename__ = "attachments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    item_id: Mapped[str] = mapped_column(String(36), ForeignKey("items.id"), nullable=False)
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    upload_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    item: Mapped[Item] = relationship(back_populates="attachments", foreign_keys=[item_id])
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    item_id: Mapped[str] = mapped_column(String(36), ForeignKey("items.id"), nullable=False)
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    item: Mapped[Item] = relationship(back_populates="comments")
+    user: Mapped[Optional[User]] = relationship(back_populates="comments")
+
+
+class Price(Base):
+    __tablename__ = "prices"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    item_id: Mapped[str] = mapped_column(String(36), ForeignKey("items.id"), nullable=False, unique=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), default="EUR", nullable=False)
+    kind: Mapped[PriceKind] = mapped_column(
+        SQLEnum(PriceKind, name="price_kind_enum"),
+        default=PriceKind.PURCHASE,
+        nullable=False,
+    )
+    frequency: Mapped[Optional[PriceFrequency]] = mapped_column(
+        SQLEnum(PriceFrequency, name="price_frequency_enum"), nullable=True
+    )
+
+    item: Mapped[Item] = relationship(back_populates="price")
