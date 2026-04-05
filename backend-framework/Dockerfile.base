@@ -1,0 +1,8 @@
+# To be built e.g. as arnodece/framework-backend-base:1.0.0
+FROM python:3.12-slim
+WORKDIR /app
+COPY . /framework
+RUN pip install /framework
+
+# Standard entrypoint, health check, signal handling
+ENTRYPOINT ["python", "-m", "uvicorn"]

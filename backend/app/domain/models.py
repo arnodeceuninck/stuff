@@ -35,7 +35,7 @@ class User(BaseModel):
     id: str # uuid
     email: Optional[str] = None
 
-class Attachement(BaseModel):
+class Attachment(BaseModel):
     id: str # uuid
     filename: str
     url: str
@@ -53,8 +53,8 @@ class Item(BaseModel):
 
     # Item info
     name: str
-    attachments: List[Attachement] = []
-    primary_image: Optional[Attachement] = None # uuid of the attachment that is the primary image
+    attachments: List[Attachment] = []
+    primary_image: Optional[Attachment] = None # uuid of the attachment that is the primary image
     description: Optional[str] = None
     comments: List[Comment] = []
     

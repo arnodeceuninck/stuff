@@ -1,0 +1,6 @@
+# framework/dependencies.py — inject framework services as FastAPI deps
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def get_db() -> AsyncSession: ...
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> User: ...
