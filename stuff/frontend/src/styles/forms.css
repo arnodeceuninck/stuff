@@ -1,0 +1,120 @@
+.form-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field span {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+input,
+select,
+textarea,
+.wysiwyg-editor {
+  width: 100%;
+  border: 1px solid rgba(31, 31, 31, 0.22);
+  border-radius: 10px;
+  padding: 0.62rem 0.75rem;
+  font: inherit;
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.wysiwyg-wrap {
+  border: 1px solid rgba(31, 31, 31, 0.22);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.wysiwyg-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.4rem;
+  border-bottom: 1px solid rgba(31, 31, 31, 0.12);
+  background: #fff8e9;
+}
+
+.wysiwyg-toolbar .btn {
+  padding: 0.25rem 0.55rem;
+}
+
+.wysiwyg-editor {
+  border: 0;
+  min-height: 170px;
+  outline: none;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 31, 31, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: rise-in 180ms ease both;
+}
+
+.modal {
+  background: var(--paper);
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  width: min(460px, 94vw);
+  animation: rise-in 220ms ease both;
+}
+
+.modal h3 {
+  margin: 0 0 1rem;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.section-header h2 {
+  margin: 0;
+}

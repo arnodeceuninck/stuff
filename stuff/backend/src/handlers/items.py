@@ -97,14 +97,18 @@ class CreateItemRequest(BaseModel):
 
 
 class UpdateItemRequest(BaseModel):
-    name: str
+    name: str | None = None
     description: str | None = None
     location_id: str | None = None
-    ownership_type: OwnershipType
+    ownership_type: OwnershipType | None = None
     linked_location_id: str | None = None
     purchased_date: datetime | None = None
     merchant_id: str | None = None
     primary_image_id: str | None = None
+
+
+class CreateCommentRequest(BaseModel):
+    content: str
 
 
 def _item_load_options() -> list:
@@ -301,6 +305,16 @@ async def create_item(
     return _to_item_response(await _get_owned_item(item.id, user.id, db))
 
 
+@router.get("/items/{item_id}", response_model=ItemResponse)
+async def get_item_detail(
+    item_id: str,
+    user: User = Depends(get_or_create_user),
+    db: AsyncSession = Depends(get_db),
+) -> ItemResponse:
+    item = await _get_owned_item(item_id, user.id, db)
+    return _to_item_response(item)
+
+
 @router.put("/items/{item_id}", response_model=ItemResponse)
 async def update_item(
     item_id: str,
@@ -310,21 +324,26 @@ async def update_item(
 ) -> ItemResponse:
     item = await _get_owned_item(item_id, user.id, db)
 
-    await _ensure_location_belongs_to_user(
-        location_id=body.location_id,
-        user_id=user.id,
-        db=db,
-        field_name="location_id",
-    )
-    await _ensure_location_belongs_to_user(
-        location_id=body.linked_location_id,
-        user_id=user.id,
-        db=db,
-        field_name="linked_location_id",
-    )
-    await _ensure_merchant_exists(body.merchant_id, db)
+    fields_to_update = body.model_fields_set
 
-    if body.primary_image_id is not None:
+    if "location_id" in fields_to_update:
+        await _ensure_location_belongs_to_user(
+            location_id=body.location_id,
+            user_id=user.id,
+            db=db,
+            field_name="location_id",
+        )
+    if "linked_location_id" in fields_to_update:
+        await _ensure_location_belongs_to_user(
+            location_id=body.linked_location_id,
+            user_id=user.id,
+            db=db,
+            field_name="linked_location_id",
+        )
+    if "merchant_id" in fields_to_update:
+        await _ensure_merchant_exists(body.merchant_id, db)
+
+    if "primary_image_id" in fields_to_update and body.primary_image_id is not None:
         attachment = await db.scalar(
             select(Attachment).where(
                 Attachment.id == body.primary_image_id,
@@ -337,18 +356,68 @@ async def update_item(
                 detail="primary_image_id does not belong to this item",
             )
 
-    item.name = body.name
-    item.description = body.description
-    item.location_id = body.location_id
-    item.ownership_type = body.ownership_type
-    item.linked_location_id = body.linked_location_id
-    item.purchased_date = body.purchased_date
-    item.merchant_id = body.merchant_id
-    item.primary_image_id = body.primary_image_id
+    if "name" in fields_to_update and body.name is not None:
+        item.name = body.name
+    if "description" in fields_to_update:
+        item.description = body.description
+    if "location_id" in fields_to_update:
+        item.location_id = body.location_id
+    if "ownership_type" in fields_to_update and body.ownership_type is not None:
+        item.ownership_type = body.ownership_type
+    if "linked_location_id" in fields_to_update:
+        item.linked_location_id = body.linked_location_id
+    if "purchased_date" in fields_to_update:
+        item.purchased_date = body.purchased_date
+    if "merchant_id" in fields_to_update:
+        item.merchant_id = body.merchant_id
+    if "primary_image_id" in fields_to_update:
+        item.primary_image_id = body.primary_image_id
 
     await db.commit()
 
     return _to_item_response(await _get_owned_item(item.id, user.id, db))
+
+
+@router.patch("/items/{item_id}", response_model=ItemResponse)
+async def patch_item(
+    item_id: str,
+    body: UpdateItemRequest,
+    user: User = Depends(get_or_create_user),
+    db: AsyncSession = Depends(get_db),
+) -> ItemResponse:
+    return await update_item(item_id=item_id, body=body, user=user, db=db)
+
+
+@router.post(
+    "/items/{item_id}/comments",
+    response_model=CommentSummary,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_item_comment(
+    item_id: str,
+    body: CreateCommentRequest,
+    user: User = Depends(get_or_create_user),
+    db: AsyncSession = Depends(get_db),
+) -> CommentSummary:
+    item = await _get_owned_item(item_id, user.id, db)
+    comment_content = body.content.strip()
+    if not comment_content:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="content cannot be empty",
+        )
+
+    comment = Comment(
+        id=str(uuid4()),
+        item_id=item.id,
+        user_id=user.id,
+        content=comment_content,
+        created_at=datetime.utcnow(),
+    )
+    db.add(comment)
+    await db.commit()
+
+    return _to_comment_summary(comment)
 
 
 @router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -1,0 +1,62 @@
+.metric-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.metric-card {
+  background: var(--sand);
+  border: 1px solid rgba(31, 31, 31, 0.08);
+  border-radius: 14px;
+  padding: 0.9rem;
+}
+
+.metric-label {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.metric-value {
+  margin: 0.25rem 0;
+  font-weight: 900;
+  font-size: 1.8rem;
+}
+
+.metric-hint {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.tree-list,
+.tree-children {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tree-node + .tree-node {
+  margin-top: 0.65rem;
+}
+
+.tree-card {
+  border: 1px dashed rgba(31, 31, 31, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #fff;
+}
+
+.tree-title {
+  font-weight: 700;
+}
+
+.tree-meta,
+.tree-note {
+  margin: 0.3rem 0 0;
+  color: var(--ink-soft);
+}
+
+.tree-children {
+  margin-left: 1rem;
+  margin-top: 0.55rem;
+}

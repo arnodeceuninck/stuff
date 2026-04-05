@@ -11,6 +11,14 @@ services:
       replicas: 2
       restart_policy:
         condition: on-failure
+  frontend:
+    image: arnodece/stuff-frontend:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "3000:80"
 
 # In production, create secrets with:
 #   printf 'postgresql+asyncpg://...' | docker secret create database_url -

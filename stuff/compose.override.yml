@@ -31,11 +31,25 @@ services:
       dockerfile: Dockerfile
     environment:
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://host.docker.internal:8001}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:3000}
     depends_on:
       - postgres
     restart: on-failure
     ports:
       - "8000:8000"
+    deploy:
+      replicas: 1
+
+  frontend:
+    image: arnodece/stuff-frontend:dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    restart: on-failure
+    ports:
+      - "3000:80"
     deploy:
       replicas: 1
 

@@ -1,0 +1,38 @@
+.home-stage {
+  max-width: 1100px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+}
+
+.home-banner {
+  margin-bottom: 1.2rem;
+  background: linear-gradient(135deg, rgba(31, 111, 120, 0.18), rgba(246, 183, 60, 0.22));
+  border-radius: 22px;
+  padding: 1.6rem;
+}
+
+.home-banner h1 {
+  font-size: clamp(2rem, 7vw, 3.4rem);
+  margin-bottom: 0.5rem;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.auth-panel {
+  background: var(--paper);
+  border-radius: 18px;
+  border: 1px solid rgba(31, 31, 31, 0.08);
+  padding: 1rem;
+  box-shadow: var(--card-shadow);
+}

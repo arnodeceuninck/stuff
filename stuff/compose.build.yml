@@ -11,3 +11,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+  frontend:
+    image: arnodece/stuff-frontend:dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
