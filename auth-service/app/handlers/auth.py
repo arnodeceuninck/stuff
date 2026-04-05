@@ -3,8 +3,8 @@ import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, status
-from passlib.context import CryptContext
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,7 +21,35 @@ from app.domain.models import RefreshToken, User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_BCRYPT_MAX_PASSWORD_BYTES = 72
+
+
+def _password_to_bytes(password: str) -> bytes:
+    return password.encode("utf-8")
+
+
+def _validate_bcrypt_password_length(password: str) -> None:
+    if len(_password_to_bytes(password)) > _BCRYPT_MAX_PASSWORD_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Password must be at most 72 bytes when UTF-8 encoded.",
+        )
+
+
+def _hash_password(password: str) -> str:
+    _validate_bcrypt_password_length(password)
+    return bcrypt.hashpw(_password_to_bytes(password), bcrypt.gensalt()).decode("utf-8")
+
+
+def _verify_password(password: str, hashed_password: str) -> bool:
+    password_bytes = _password_to_bytes(password)
+    if len(password_bytes) > _BCRYPT_MAX_PASSWORD_BYTES:
+        return False
+
+    try:
+        return bcrypt.checkpw(password_bytes, hashed_password.encode("utf-8"))
+    except ValueError:
+        return False
 
 
 def _make_refresh_token() -> tuple[str, str]:
@@ -60,7 +88,7 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)) ->
     user = User(
         id=str(uuid.uuid4()),
         email=body.email,
-        hashed_password=_pwd_context.hash(body.password),
+        hashed_password=_hash_password(body.password),
     )
     db.add(user)
     await db.flush()  # write user row; commit happens inside _issue_tokens
@@ -72,7 +100,7 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)) -> Token
     result = await db.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 
-    if not user or not _pwd_context.verify(body.password, user.hashed_password):
+    if not user or not _verify_password(body.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

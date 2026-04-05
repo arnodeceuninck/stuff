@@ -16,3 +16,7 @@ class FrameworkSettings(BaseSettings):
     database_url: SecretStr
     auth_secret: SecretStr
     grafana_push_url: str | None = None
+    log_level: str = "INFO"
+    log_json: bool = True
+    environment: str = "local"
+    service_name: str | None = None

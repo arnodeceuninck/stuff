@@ -4,6 +4,13 @@ from typing import Any
 
 from fastapi import FastAPI
 
+from backend_framework.config import FrameworkSettings
+from backend_framework.logging_config import (
+    RequestLoggingMiddleware,
+    setup_logging,
+    unhandled_exception_handler,
+)
+
 AppLifespanHook = Callable[[FastAPI], AsyncIterator[None]]
 
 
@@ -16,6 +23,15 @@ def create_app(
     openapi_url: str | None = "/openapi.json",
     **fastapi_kwargs: Any,
 ) -> FastAPI:
+    settings = FrameworkSettings()
+    service_name = settings.service_name or title
+    setup_logging(
+        log_level=settings.log_level,
+        log_json=settings.log_json,
+        service=service_name,
+        environment=settings.environment,
+    )
+
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         if lifespan_hooks is not None:
@@ -25,7 +41,7 @@ def create_app(
 
         yield
 
-    return FastAPI(
+    app = FastAPI(
         title=title,
         docs_url=docs_url,
         redoc_url=redoc_url,
@@ -33,3 +49,6 @@ def create_app(
         lifespan=lifespan,
         **fastapi_kwargs,
     )
+    app.add_middleware(RequestLoggingMiddleware)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
+    return app
