@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "backend-framework"
+version = "0.0.1"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "sqlalchemy[asyncio]>=2.0",
+    "pydantic-settings>=2.0",
+    "pydantic[email]>=2.0",
+    "PyJWT>=2.8",
+    "prometheus-client>=0.20",
+]
+
+[tool.setuptools]
+py-modules = ["app", "config", "dependencies"]
+
+[tool.setuptools.packages.find]
+where = ["."]

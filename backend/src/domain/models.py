@@ -30,6 +30,23 @@ class OwnershipType(str, Enum):
     NEEDED = "NEEDED"
 
 
+class User(Base):
+    """Stuff-project-specific user profile. The primary key is the same user_id
+    issued by the auth-service so no join between services is needed.
+    Credentials (email, password) live in the auth-service only."""
+
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    # App-specific settings below — add more as needed
+    display_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    preferred_currency: Mapped[str] = mapped_column(String(3), default="EUR", nullable=False)
+
+    locations: Mapped[List["Location"]] = relationship(back_populates="user")
+    items: Mapped[List["Item"]] = relationship(back_populates="user")
+    comments: Mapped[List["Comment"]] = relationship(back_populates="user")
+
+
 class Merchant(Base):
     __tablename__ = "merchants"
 
@@ -39,17 +56,6 @@ class Merchant(Base):
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     items: Mapped[List["Item"]] = relationship(back_populates="merchant")
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-
-    locations: Mapped[List["Location"]] = relationship(back_populates="user")
-    items: Mapped[List["Item"]] = relationship(back_populates="user")
-    comments: Mapped[List["Comment"]] = relationship(back_populates="user")
 
 
 class Location(Base):
@@ -63,7 +69,7 @@ class Location(Base):
     )
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    user: Mapped[User] = relationship(back_populates="locations")
+    user: Mapped["User"] = relationship(back_populates="locations")
     parent_location: Mapped[Optional["Location"]] = relationship(
         "Location", remote_side=[id], back_populates="child_locations"
     )
@@ -106,7 +112,7 @@ class Item(Base):
         String(36), ForeignKey("attachments.id"), nullable=True
     )
 
-    user: Mapped[Optional[User]] = relationship(back_populates="items")
+    user: Mapped[Optional["User"]] = relationship(back_populates="items")
     location: Mapped[Optional[Location]] = relationship(
         back_populates="items", foreign_keys=[location_id]
     )
@@ -147,7 +153,7 @@ class Comment(Base):
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     item: Mapped[Item] = relationship(back_populates="comments")
-    user: Mapped[Optional[User]] = relationship(back_populates="comments")
+    user: Mapped[Optional["User"]] = relationship(back_populates="comments")
 
 
 class Price(Base):
