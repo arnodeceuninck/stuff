@@ -1,8 +1,18 @@
-class FrameworkSettings(BaseSettings):
-    database_url: str
-    auth_secret: str
-    grafana_push_url: str | None = None
+from pathlib import Path
 
-# app/config.py
-class AppSettings(FrameworkSettings):
-    my_app_specific_flag: bool = False
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_SECRETS_DIR = Path("/run/secrets")
+
+
+class FrameworkSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        secrets_dir=_SECRETS_DIR if _SECRETS_DIR.is_dir() else None,
+    )
+
+    database_url: SecretStr
+    auth_secret: SecretStr
+    grafana_push_url: str | None = None
