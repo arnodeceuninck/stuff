@@ -8,9 +8,14 @@ from passlib.context import CryptContext
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.jwt import create_access_token
-from auth.schemas import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
-from dependencies import get_db
+from backend_framework.auth.jwt import create_access_token
+from backend_framework.auth.schemas import (
+    LoginRequest,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+)
+from backend_framework.dependencies import get_db
 from app.config import get_settings
 from app.domain.models import RefreshToken, User
 

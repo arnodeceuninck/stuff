@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from config import FrameworkSettings
+from backend_framework.config import FrameworkSettings
 
 
 class AuthSettings(FrameworkSettings):

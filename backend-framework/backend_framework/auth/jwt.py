@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from jwt.exceptions import InvalidTokenError  # noqa: F401 — re-exported for callers
+from jwt.exceptions import InvalidTokenError  # noqa: F401 - re-exported for callers
 
-from auth.schemas import TokenPayload
+from backend_framework.auth.schemas import TokenPayload
 
 
 def create_access_token(user_id: str, email: str, secret: str, expires_minutes: int = 60) -> str:

@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, String
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.mixins import Base
+from backend_framework.db.mixins import Base
 
 
 class User(Base):

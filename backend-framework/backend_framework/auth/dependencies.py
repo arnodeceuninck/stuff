@@ -4,9 +4,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
-from auth.jwt import decode_token
-from auth.schemas import TokenPayload
-from config import FrameworkSettings
+from backend_framework.auth.jwt import decode_token
+from backend_framework.auth.schemas import TokenPayload
+from backend_framework.config import FrameworkSettings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

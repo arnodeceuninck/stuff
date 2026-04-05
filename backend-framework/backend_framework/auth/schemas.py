@@ -18,7 +18,7 @@ class TokenResponse(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    sub: str  # user_id
+    sub: str
     email: str
 
 

@@ -6,7 +6,7 @@ from typing import List, Optional
 from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.mixins import Base
+from backend_framework.db.mixins import Base
 
 
 class PriceKind(str, Enum):

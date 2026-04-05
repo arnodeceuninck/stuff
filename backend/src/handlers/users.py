@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.dependencies import get_current_user
-from auth.schemas import TokenPayload
-from dependencies import get_db
+from backend_framework.auth.dependencies import get_current_user
+from backend_framework.auth.schemas import TokenPayload
+from backend_framework.dependencies import get_db
 from src.domain.models import Item, Location, User
 
 router = APIRouter(prefix="/users", tags=["users"])

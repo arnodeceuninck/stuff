@@ -1,0 +1,36 @@
+services:
+  auth-service:
+    image: your-registry/auth-service:latest
+    environment:
+      # Non-secret config can go here as plain env vars
+      GRAFANA_PUSH_URL: "http://grafana-agent:3100/loki/api/v1/push"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "30"
+    secrets:
+      - database_url
+      - auth_secret
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  backend:
+    image: your-registry/backend:latest
+    environment:
+      GRAFANA_PUSH_URL: "http://grafana-agent:3100/loki/api/v1/push"
+    secrets:
+      - database_url
+      - auth_secret
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+# Secrets are managed externally via `docker secret create`.
+# The file name inside the container (/run/secrets/<name>) must match the
+# field name in FrameworkSettings for pydantic-settings to pick it up.
+secrets:
+  database_url:
+    external: true
+  auth_secret:
+    external: true
