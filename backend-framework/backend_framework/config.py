@@ -15,6 +15,7 @@ class FrameworkSettings(BaseSettings):
 
     database_url: SecretStr
     auth_secret: SecretStr
+    auth_service_url: str = "http://localhost:8001"
     grafana_push_url: str | None = None
     log_level: str = "INFO"
     log_json: bool = True

@@ -26,10 +26,7 @@ class UserLocationSummary(BaseModel):
     child_location_count: int
 
 
-async def get_or_create_user(
-    current_user: TokenPayload = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> User:
+async def ensure_user_exists(current_user: TokenPayload, db: AsyncSession) -> User:
     result = await db.execute(select(User).where(User.id == current_user.sub))
     user = result.scalar_one_or_none()
     if user is None:
@@ -38,6 +35,13 @@ async def get_or_create_user(
         await db.commit()
         await db.refresh(user)
     return user
+
+
+async def get_or_create_user(
+    current_user: TokenPayload = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    return await ensure_user_exists(current_user, db)
 
 
 @router.get("/me", response_model=UserProfile)

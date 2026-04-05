@@ -44,3 +44,28 @@ Suggested Loki labels to extract in your pipeline:
 - `level`
 - `logger`
 
+## Shared Auth Proxy
+
+Services that rely on `auth-service` for credentials can expose framework-owned proxy routes with:
+
+```python
+from backend_framework.auth import create_auth_proxy_router
+```
+
+The shared router exposes these endpoints on the service itself:
+
+- `POST /auth/login`
+- `POST /auth/register`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+
+`/auth/login` accepts the OAuth2 password form used by Swagger UI and forwards it to `auth-service` as the auth-service JSON payload.
+
+Projects can attach service-specific post-auth logic through `create_auth_proxy_router(on_auth_success=...)`. The hook receives the auth event (`login`, `register`, or `refresh`) plus the decoded token payload, which lets services create local profile rows or run other project-specific synchronization after successful authentication.
+
+### Auth Environment Variables
+
+- `AUTH_SERVICE_URL` (default: `http://localhost:8001`)
+
+In local Docker Desktop development, set `AUTH_SERVICE_URL=http://host.docker.internal:8001` for containers that need to reach the host-published auth-service.
+

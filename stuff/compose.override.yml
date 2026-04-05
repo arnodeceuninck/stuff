@@ -29,6 +29,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    environment:
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://host.docker.internal:8001}
     depends_on:
       - postgres
     restart: on-failure
