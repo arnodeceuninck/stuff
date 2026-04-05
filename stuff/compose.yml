@@ -1,0 +1,28 @@
+services:
+  backend:
+    image: arnodece/stuff-backend:latest
+    environment:
+      GRAFANA_PUSH_URL: "http://grafana-agent:3100/loki/api/v1/push"
+    secrets:
+      - source: database_url
+        target: database_url
+      - auth_secret
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+# In production, create secrets with:
+#   printf 'postgresql+asyncpg://...' | docker secret create database_url -
+#   printf 'your-secret'             | docker secret create auth_secret -
+# Then deploy:
+#   docker stack deploy -c compose.yml stuff
+#
+# Note: `database_url` and `auth_secret` are global Swarm secret names.
+# If auth-service is deployed to the same Swarm, use distinct names and map
+# them via the `source/target` fields, or use separate Swarms per service.
+secrets:
+  database_url:
+    external: true
+  auth_secret:
+    external: true

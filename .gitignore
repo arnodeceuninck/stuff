@@ -1,5 +1,11 @@
-# Secrets — never commit these
-.env
+# Per-repo .env files — never commit
+**/.env
+
+# Docker secret files in each service repo
+auth-service/secrets/*
+!auth-service/secrets/.gitignore
+stuff/secrets/*
+!stuff/secrets/.gitignore
 
 # Python
 __pycache__/

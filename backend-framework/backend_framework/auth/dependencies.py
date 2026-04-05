@@ -18,7 +18,7 @@ def _get_settings() -> FrameworkSettings:
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenPayload:
     try:
-        return decode_token(token, _get_settings().auth_secret)
+        return decode_token(token, _get_settings().auth_secret.get_secret_value())
     except InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

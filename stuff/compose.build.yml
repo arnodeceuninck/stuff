@@ -1,0 +1,13 @@
+# Build the stuff backend image.
+# The base image arnodece/framework-backend-base:0.0.1 must already be available
+# locally (built via backend-framework/compose.build.yml) or pulled from a registry.
+#
+# Usage:
+#   docker compose -f compose.build.yml build
+
+services:
+  backend:
+    image: arnodece/stuff-backend:dev
+    build:
+      context: ./backend
+      dockerfile: Dockerfile

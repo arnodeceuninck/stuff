@@ -1,0 +1,13 @@
+# Build the auth-service image.
+# The base image arnodece/framework-backend-base:0.0.1 must already be available
+# locally (built via backend-framework/compose.build.yml) or pulled from a registry.
+#
+# Usage:
+#   docker compose -f compose.build.yml build
+
+services:
+  auth-service:
+    image: arnodece/stuff-auth-service:dev
+    build:
+      context: .
+      dockerfile: Dockerfile

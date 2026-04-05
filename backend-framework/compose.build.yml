@@ -1,0 +1,12 @@
+# Build the shared base image that all services inherit from.
+# Must be run whenever backend-framework dependencies or code change.
+#
+# Usage:
+#   docker compose -f compose.build.yml build
+
+services:
+  backend-framework-base:
+    image: arnodece/framework-backend-base:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile.base

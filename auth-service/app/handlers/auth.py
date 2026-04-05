@@ -34,7 +34,10 @@ def _make_refresh_token() -> tuple[str, str]:
 async def _issue_tokens(user: User, db: AsyncSession) -> TokenResponse:
     settings = get_settings()
     access_token = create_access_token(
-        user.id, user.email, settings.auth_secret, settings.access_token_expire_minutes
+        user.id,
+        user.email,
+        settings.auth_secret.get_secret_value(),
+        settings.access_token_expire_minutes,
     )
     raw_refresh, refresh_hash = _make_refresh_token()
     expires_at = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)

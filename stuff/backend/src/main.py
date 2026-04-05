@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from backend_framework import create_app
 from backend_framework.dependencies import init_db
 
-from app.handlers.auth import router as auth_router
+from src.handlers.users import router as users_router
 
 
 @asynccontextmanager
@@ -15,5 +15,5 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = create_app(title="Auth Service", lifespan_hooks=lifespan)
-app.include_router(auth_router)
+app = create_app(title="Stuff API", lifespan_hooks=lifespan)
+app.include_router(users_router)

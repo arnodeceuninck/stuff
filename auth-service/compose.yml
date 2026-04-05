@@ -1,0 +1,26 @@
+services:
+  auth-service:
+    image: arnodece/stuff-auth-service:latest
+    environment:
+      GRAFANA_PUSH_URL: "http://grafana-agent:3100/loki/api/v1/push"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "30"
+    secrets:
+      - source: database_url
+        target: database_url
+      - auth_secret
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+# In production, create secrets with:
+#   printf 'postgresql+asyncpg://...' | docker secret create database_url -
+#   printf 'your-secret'             | docker secret create auth_secret -
+# Then deploy:
+#   docker stack deploy -c compose.yml auth-service
+secrets:
+  database_url:
+    external: true
+  auth_secret:
+    external: true
